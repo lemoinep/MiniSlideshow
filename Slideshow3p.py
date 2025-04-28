@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 import os
-import sys
+#import sys
 import argparse
 
 class Slideshow:
@@ -15,9 +15,9 @@ class Slideshow:
         self.current_image = 0
         self.setup_ui()
         self.master.resizable(True, True)
-        self.master.overrideredirect(1)  # Masquer la barre de titre
-        screen_width = self.master.winfo_screenwidth()
-        screen_height = self.master.winfo_screenheight()
+        self.master.overrideredirect(1)  
+        #screen_width = self.master.winfo_screenwidth()
+        #screen_height = self.master.winfo_screenheight()
         self.master.bind("<Escape>", self.exit_app_key) 
         self.master.bind("<space>", self.next_image_key)
 
@@ -49,12 +49,10 @@ class Slideshow:
         self.select_button = tk.Button(button_frame, text="Select Directory", command=self.select_directory, bg="#444444", fg="white")
         self.select_button.pack(side="left")
 
-        # Lier l'événement de roulette de la souris
         self.master.bind_all("<MouseWheel>", self.on_mouse_wheel)
         self.master.bind_all("<Button-4>", self.on_mouse_wheel_up)
         self.master.bind_all("<Button-5>", self.on_mouse_wheel_down)
 
-        # Lier les flèches du clavier
         self.master.bind_all("<Left>", lambda event: self.prev_image())
         self.master.bind_all("<Right>", lambda event: self.next_image())
 
@@ -62,19 +60,16 @@ class Slideshow:
         
     def rgb_to_hex(self, r, g, b):
         if not (isinstance(r, int) and isinstance(g, int) and isinstance(b, int)):
-            raise ValueError("Les valeurs RGB doivent être des entiers.")
+            raise ValueError("RGB values ​​must be Integer.")
         if not (0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255):
-            raise ValueError("Les valeurs RGB doivent être comprises entre 0 et 255.")
+            raise ValueError("RGB values ​​must be between 0 and 255..")
         return f"#{r:02x}{g:02x}{b:02x}"
     
-
-
     def show_image(self):
         if self.images:
             self.canvas.delete("all") 
             sz1 = 250 
            
-            # Afficher l'image précédente
             prev_image_path = self.images[(self.current_image - 1) % len(self.images)]
             prev_image = Image.open(prev_image_path)
             prev_width, prev_height = prev_image.size
