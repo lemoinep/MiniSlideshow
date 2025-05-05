@@ -23,6 +23,11 @@ class Slideshow:
 
     def get_images(self):
         return sorted([os.path.join(self.directory, file) for file in os.listdir(self.directory) if file.endswith(('.jpg','.JPG', '.jpeg', '.png', '.gif'))])
+    
+    def get_images(self):
+        files = [file for file in os.listdir(self.directory) if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif','.JPG'))]
+        files_sorted = sorted(files)
+        return [os.path.join(self.directory, file) for file in files_sorted]
 
     def setup_ui(self):
         self.master.config(bg="#333333") 

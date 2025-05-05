@@ -23,8 +23,12 @@ class Slideshow:
         self.master.geometry(f"{screen_width}x{screen_height}") 
         self.master.bind("<Escape>", self.exit_app_key) 
 
+  
     def get_images(self):
-        return [os.path.join(self.directory, file) for file in os.listdir(self.directory) if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
+        files = [file for file in os.listdir(self.directory) if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif','.JPG'))]
+        files_sorted = sorted(files)
+        return [os.path.join(self.directory, file) for file in files_sorted]
+
 
     def setup_ui(self):
         self.master.config(bg="#333333") 
