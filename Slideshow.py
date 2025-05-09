@@ -22,6 +22,7 @@ class Slideshow:
         screen_height = self.master.winfo_screenheight()
         self.master.geometry(f"{screen_width}x{screen_height}") 
         self.master.bind("<Escape>", self.exit_app_key) 
+        self.master.bind("<space>", self.next_image_key)
 
   
     def get_images(self):
@@ -86,6 +87,23 @@ class Slideshow:
         if not (0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255):
             raise ValueError("RGB values ​​must be between 0 and 255..")
         return f"#{r:02x}{g:02x}{b:02x}"
+    
+    
+    def shadow(self,x,y,w,h):
+        r, g, b = 30, 30, 30 
+        dp = 10
+        hex_color = self.rgb_to_hex(r, g, b)
+        self.canvas.create_rectangle(x+dp, y+dp, x+w+dp, y+h+dp, fill=hex_color, outline=hex_color)
+        
+        r, g, b = 20, 20, 20 
+        dp = 8
+        hex_color = self.rgb_to_hex(r, g, b)
+        self.canvas.create_rectangle(x+dp*2, y+dp*2, x+w+dp, y+h+dp, fill=hex_color, outline=hex_color)  
+        
+        r, g, b = 10, 10, 10 
+        dp = 5
+        hex_color = self.rgb_to_hex(r, g, b)
+        self.canvas.create_rectangle(x+dp*2, y+dp*2, x+w+dp, y+h+dp, fill=hex_color, outline=hex_color)  
 
     def show_image(self):
         if self.images:
@@ -106,17 +124,8 @@ class Slideshow:
 
             x = (screen_width - new_width) // 2
             y = ((screen_height - 150) - new_height) // 2 + 120
-
-            r, g, b = 30, 30, 30 
-            dp = 10
-            hex_color = self.rgb_to_hex(r, g, b)
-            self.canvas.create_rectangle(x+dp, y+dp, x+new_width+dp, y+new_height+dp, fill=hex_color, outline=hex_color)
-
-            r, g, b = 10, 10, 10 
-            dp = 5
-            hex_color = self.rgb_to_hex(r, g, b)
-            self.canvas.create_rectangle(x+dp*2, y+dp*2, x+new_width+dp, y+new_height+dp, fill=hex_color, outline=hex_color)
-
+            
+            self.shadow(x,y,new_width,new_height)
             self.canvas.create_image(x, y, anchor="nw", image=photo)
             self.canvas.image = photo
 
@@ -158,6 +167,11 @@ class Slideshow:
 
     def exit_app_key(self, event):
         self.master.destroy()
+        
+    def next_image_key(self, event):
+        if self.images:
+            self.current_image = (self.current_image + 1) % len(self.images)
+            self.show_image()
         
     def update_clock(self):
         current_time = time.strftime('%H:%M:%S')
