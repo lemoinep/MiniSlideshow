@@ -39,27 +39,12 @@ class Slideshow:
         self.canvas = tk.Canvas(self.master, width=screen_width, height=screen_height-85, bg="#333333", highlightthickness=0)
         self.canvas.pack()
 
-        # Frame pour les boutons
         button_frame = tk.Frame(self.master, bg="#333333")
         button_frame.pack(fill="x")
-
-        #self.prev_button = tk.Button(button_frame, text="Before", command=self.prev_image, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.prev_button.pack(side="left", padx=5, pady=5)
-
-        #self.next_button = tk.Button(button_frame, text="Next", command=self.next_image, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.next_button.pack(side="left", padx=5, pady=5)
-
-        #self.exit_button = tk.Button(button_frame, text="Exit", command=self.exit_app, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.exit_button.pack(side="left", padx=5, pady=5)
-
 
         self.image_number_label = tk.Label(button_frame, text="", bg="#333333", fg="white", font=("Helvetica", 12))
         self.image_number_label.pack(side="right", padx=5, pady=5)
 
-        # Frame pour le slider, sous les boutons
         slider_frame = tk.Frame(self.master, bg="#333333")
         slider_frame.pack(fill="x")
 
@@ -72,10 +57,8 @@ class Slideshow:
         self.master.bind_all("<Button-4>", self.on_mouse_wheel_up)
         self.master.bind_all("<Button-5>", self.on_mouse_wheel_down)
         
-        # Label pour l'heure en bas à droite
         self.clock_label = tk.Label(self.master, bg="#333333", fg="white", font=("Helvetica", 10))
-        self.clock_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)  # 10 pixels du bord bas droit
-        #self.clock_label.pack(side="right", padx=10)
+        self.clock_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10) 
 
         self.show_image()
         

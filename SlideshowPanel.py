@@ -1,6 +1,7 @@
 # Author(s): Dr. Patrick Lemoine
 
 import tkinter as tk
+from tkinter import filedialog
 from PIL import Image, ImageTk
 import os
 import sys
@@ -8,27 +9,30 @@ import argparse
 import time
 
 class Slideshow:
-    def __init__(self, master, directory):
+    def __init__(self, master, directory,panel_cols,panel_rows):
         self.master = master
         self.directory = directory
         self.images = self.get_images()
+
+        self.panel_cols = panel_cols
+        self.panel_rows = panel_rows
+        self.panel_step = self.panel_cols * self.panel_rows
+
         self.current_image = 0
         self.setup_ui()
         self.update_clock()
         self.master.resizable(True, True)
-        self.master.overrideredirect(1)  # Hide the title bar
+        self.master.overrideredirect(1)  
         screen_width = self.master.winfo_screenwidth()
         screen_height = self.master.winfo_screenheight()
-        self.master.geometry(f"{screen_width}x{screen_height}") 
         self.master.bind("<Escape>", self.exit_app_key) 
         self.master.bind("<space>", self.next_image_key)
 
-  
+    
     def get_images(self):
         files = [file for file in os.listdir(self.directory) if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif','.JPG'))]
         files_sorted = sorted(files)
         return [os.path.join(self.directory, file) for file in files_sorted]
-
 
     def setup_ui(self):
         self.master.config(bg="#333333") 
@@ -43,23 +47,9 @@ class Slideshow:
         button_frame = tk.Frame(self.master, bg="#333333")
         button_frame.pack(fill="x")
 
-        #self.prev_button = tk.Button(button_frame, text="Before", command=self.prev_image, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.prev_button.pack(side="left", padx=5, pady=5)
-
-        #self.next_button = tk.Button(button_frame, text="Next", command=self.next_image, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.next_button.pack(side="left", padx=5, pady=5)
-
-        #self.exit_button = tk.Button(button_frame, text="Exit", command=self.exit_app, bg="#444444", fg="white")
-        #self.prev_button.pack(side="left")
-        #self.exit_button.pack(side="left", padx=5, pady=5)
-
-
         self.image_number_label = tk.Label(button_frame, text="", bg="#333333", fg="white", font=("Helvetica", 12))
         self.image_number_label.pack(side="right", padx=5, pady=5)
 
-        # Frame pour le slider, sous les boutons
         slider_frame = tk.Frame(self.master, bg="#333333")
         slider_frame.pack(fill="x")
 
@@ -73,10 +63,10 @@ class Slideshow:
         self.master.bind_all("<Button-5>", self.on_mouse_wheel_down)
         
         self.clock_label = tk.Label(self.master, bg="#333333", fg="white", font=("Helvetica", 10))
-        self.clock_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10) 
+        self.clock_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)  
 
         self.show_image()
-
+        
     def rgb_to_hex(self, r, g, b):
         if not (isinstance(r, int) and isinstance(g, int) and isinstance(b, int)):
             raise ValueError("RGB values ​​must be Integer.")
@@ -101,50 +91,70 @@ class Slideshow:
         hex_color = self.rgb_to_hex(r, g, b)
         self.canvas.create_rectangle(x+dp*2, y+dp*2, x+w+dp, y+h+dp, fill=hex_color, outline=hex_color)  
 
+             
+    
     def show_image(self):
-        if self.images:
-            self.canvas.delete("all")
+        if not self.images:
+            return
+    
+        self.canvas.delete("all")
+    
+        screen_width = self.master.winfo_screenwidth()
+        screen_height = self.master.winfo_screenheight() - 150 
+    
+        cols = self.panel_cols
+        rows = self.panel_rows
+    
+        max_img_width = screen_width // cols - 20  
+        max_img_height = screen_height // rows - 20
+    
+        start_index = self.current_image - 4 
+        start_index = self.current_image - 0 
+    
+        self.canvas.images = []
+    
+        for i in range(rows):
+            for j in range(cols):
+                img_index = (start_index + i * cols + j) % len(self.images)
+                image_path = self.images[img_index]
+                img = Image.open(image_path)
+                width, height = img.size
+    
+                ratio = min(max_img_width / width, max_img_height / height)
+                w, h = int(width * ratio), int(height * ratio)
+    
+                resized_img = img.resize((w, h))
+                photo_img = ImageTk.PhotoImage(resized_img)
+    
+                x = j * (screen_width // cols) + ((screen_width // cols) - w) // 2
+                y = i * (screen_height // rows) + ((screen_height // rows) - h) // 2 + 50  
+    
+                self.shadow(x, y, w, h)  
+                self.canvas.create_image(x, y, anchor="nw", image=photo_img)
+    
+                self.canvas.images.append(photo_img) 
+    
+        self.slider.set(self.current_image)
 
-            image_path = self.images[self.current_image]
-            image = Image.open(image_path)
-            width, height = image.size
-
-            screen_width = self.master.winfo_screenwidth()
-            screen_height = self.master.winfo_screenheight() - 150
-            ratio = min((screen_width - 20) / width, screen_height / height)
-            new_width = int(width * ratio)
-            new_height = int(height * ratio)
-
-            image = image.resize((new_width, new_height))
-            photo = ImageTk.PhotoImage(image)
-
-            x = (screen_width - new_width) // 2
-            y = ((screen_height - 150) - new_height) // 2 + 120
-            
-            self.shadow(x,y,new_width,new_height)
-            self.canvas.create_image(x, y, anchor="nw", image=photo)
-            self.canvas.image = photo
-
-            #self.image_number_label.config(text=f"Image {self.current_image + 1} / {len(self.images)}")
-            self.slider.set(self.current_image)
-
+        
     def prev_image(self):
         if self.images:
-            self.current_image = (self.current_image - 1) % len(self.images)
+            self.current_image = (self.current_image - self.panel_step) % len(self.images)
             self.slider.set(self.current_image)
             self.show_image()
 
     def next_image(self):
         if self.images:
-            self.current_image = (self.current_image + 1) % len(self.images)
+            self.current_image = (self.current_image + self.panel_step) % len(self.images)
             self.slider.set(self.current_image)
             self.show_image()
-
+            
     def slider_changed(self, value):
         index = int(value)
         if 0 <= index < len(self.images):
             self.current_image = index
             self.show_image()
+
 
     def on_mouse_wheel(self, event):
         if event.delta > 0:
@@ -160,30 +170,36 @@ class Slideshow:
 
     def exit_app(self):
         self.master.destroy()
-
+        
     def exit_app_key(self, event):
         self.master.destroy()
-        
+
+    def select_directory(self):
+        directory = filedialog.askdirectory()
+        if directory:
+            self.directory = directory
+            self.images = self.get_images()
+            self.current_image = 0
+            self.show_image()
+            
     def next_image_key(self, event):
         if self.images:
-            self.current_image = (self.current_image + 1) % len(self.images)
+            self.current_image = (self.current_image + self.panel_step) % len(self.images)
             self.show_image()
-        
+            
     def update_clock(self):
         current_time = time.strftime('%H:%M:%S')
         self.clock_label.config(text=current_time)
         self.master.after(1000, self.update_clock)  
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--Path', type=str, default='None', help='Path to image directory.')
+    parser.add_argument('--Path',type=str,default='None', help='Path.')
+    parser.add_argument('--Cols',type=int,default=7, help='Cols.')
+    parser.add_argument('--Rows',type=int,default=5, help='Rows.')
     args = parser.parse_args()
-    directory = args.Path
-
-    if directory == 'None' or not os.path.isdir(directory):
-        print("Please provide a valid path to an image file with --Path")
-        sys.exit(1)
-
     root = tk.Tk()
-    slideshow = Slideshow(root, directory)
+    slideshow = Slideshow(root,args.Path,args.Cols,args.Rows)
     root.mainloop()
+
